@@ -70,3 +70,8 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+.image-container{
+  scale: 80%;
+  position: absolute;
+}

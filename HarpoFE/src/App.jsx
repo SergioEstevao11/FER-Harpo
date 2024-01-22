@@ -1,7 +1,12 @@
 import { useRef, useEffect, useState } from 'react'
 import './App.css'
+import SparkleImage from './SparkleImage';
+import Axios from "axios";
+
 
 function App() {
+  const [data,setData]=useState("")
+
   const videoRef = useRef(null)
   const photoRef = useRef(null)
 
@@ -46,18 +51,27 @@ function App() {
     setHasPhoto(false)
   }
 
+  const getFeedback=async()=>{
+    const response=await Axios.get("http://localhost:5000/test");
+    setData(response.data)
+  }
+
   useEffect(() => {
+    //getFeedback();
     getVideo();
+    getFeedback();
   }, [videoRef])
 
   return (
     <>
-      
       <div className='App'>
-        <video ref={videoRef}></video>
+        <div className='image-container'>
+          <SparkleImage src="./src/assets/womenReactions/women-clap.png" id="reaction_pic"/>
+        </div>
+        <video ref={videoRef} className="video-stream"></video>
         <button onClick={takePhoto}>SNAP!</button>
       </div>
-      <div className={'result' + (hasPhoto ? 'hasPhoto' : '')}>
+      <div className={'result ' + (hasPhoto ? 'hasPhoto' : '')}>
         <canvas ref={photoRef}></canvas>
         <button onClick={closePhoto}>CLOSE!</button>
       </div>
