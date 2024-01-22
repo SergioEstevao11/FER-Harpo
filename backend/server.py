@@ -1,13 +1,65 @@
 from flask import Flask, request
 from flask_cors import CORS
+from tensorflow.keras.models import load_model
+import numpy as np
+import cv2
+import skimage.transform
 import os
 
 app = Flask(__name__)
 CORS(app)
 
-@app.route("/test")
-def test():
-    return {"Status": "ok"}
+# Load the model from the H5 file
+model = load_model('trained_model.h5')
+
+dict = {0: 'A', 1: 'B', 2: 'C', 3: 'D', 4: 'E', 5: 'F', 6: 'G', 7: 'H', 8: 'I', 9: 'J', 10: 'K', 11: 'L',
+        12: 'M', 13: 'N', 14: 'O', 15: 'P', 16: 'Q', 17: 'R', 18: 'S', 19: 'T', 20: 'U', 21: 'V', 22: 'W', 
+        23: 'X', 24: 'Y', 25: 'Z', 26: 'del', 27: 'nothing', 28: 'space', 29: 'other'}
+threshold = 5e-2
+imageSize = 50
+current_letter = "V"
+emotions = {0: "neutral", 1: "happy", 2: "success", 3: "sad"}
+current_emotion = emotions[0] #neutral is the default
+
+
+def evaluate_emotion(prediction, current_letter, threshold):
+    if current_emotion == emotions[2]:
+        return emotions[2]
+
+    if current_letter in prediction['valid_classes']:
+        return emotions[2]  # 'success'
+
+    current_letter_confidence = prediction['confidences'][current_letter]
+
+    if prediction['predicted_class'] == current_letter:
+        return emotions[1]  # 'happy'
+
+    if abs(current_letter_confidence - threshold) <= 0.1:  # Adjust this value as needed
+        return emotions[0]  # 'neutral'
+
+    return emotions[3]  # 'sad'
+
+def predict_image(img_file, threshold):     
+    global current_emotion
+
+    img_file = skimage.transform.resize(img_file, (imageSize, imageSize, 3))
+    img_arr = np.asarray([img_file])
+    pred = model.predict(img_arr)
+    pred_class = np.argmax(pred, axis=1)
+    valid_classes = np.where(pred[0] > threshold)[0]
+
+    prediction = {
+        "predicted_class": dict[pred_class[0]],
+        "valid_classes": [dict[i] for i in valid_classes],
+        "confidences": {dict[i]: float(pred[0][i]) for i in range(len(pred[0]))},
+        "is_valid": bool(pred[0][pred_class[0]] > threshold)
+    }
+
+    # Evaluate the emotional state based on the prediction
+    current_emotion = evaluate_emotion(prediction, current_letter, threshold)
+    prediction["emotion"] = current_emotion
+    return prediction
+
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
@@ -16,11 +68,34 @@ def upload_file():
     file = request.files['file']
     if file.filename == '':
         return 'No selected file', 400
+    if current_letter == '':
+        return 'No letter selected yet', 400
     if file:
-        filename = "received_photo.png"
+        filename = "received_photo.jpg"
         save_path = os.path.join('./', filename)
         file.save(save_path)
-        return 'File saved successfully', 200
+
+        # Perform prediction
+        img = cv2.imread(save_path)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  # Convert to RGB
+        prediction = predict_image(img, threshold)
+
+        return prediction, 200  # Return JSON serializable response
+
+@app.route('/letter', methods=['POST'])
+def update_letter():
+    global current_letter
+    global current_emotion
+    data = request.get_json()
+    if not data or 'letter' not in data:
+        return 'No letter part', 400
+    current_letter = data['letter']
+    current_emotion = emotions[0]
+    return {"message": f"Current letter updated to: {current_letter}"}, 200
+
+@app.route("/test")
+def test():
+    return {"Status": "ok"}
 
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)

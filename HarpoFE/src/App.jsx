@@ -7,6 +7,7 @@ function App() {
   const videoRef = useRef(null);
   const photoRef = useRef(null);
   const [hasPhoto, setHasPhoto] = useState(false);
+  const [data, setData] = useState("")
 
   const getVideo = () => {
     navigator.mediaDevices.getUserMedia({ video: { width: 1920, height: 1080 } })
@@ -48,6 +49,7 @@ function App() {
         }
       });
       console.log('File uploaded successfully', response);
+      setData(response["data"]["emotion"])
     } catch (error) {
       console.error('Error uploading file', error);
     }
@@ -70,16 +72,17 @@ function App() {
   return (
     <>
       <div className='App'>
+        <div>{data}</div>
         <div className='image-container'>
-          <SparkleImage src="./src/assets/womenReactions/women-clap.png" id="reaction_pic" />
+          <SparkleImage src="./src/assets/womenReactions/neutral.png" id="reaction_pic" />
         </div>
         <video ref={videoRef} className="video-stream"></video>
-        {/* <button onClick={takePhoto}>SNAP!</button> */}
+        <button onClick={takePhoto}>SNAP!</button>
       </div>
-      {/* <div className={'result ' + (hasPhoto ? 'hasPhoto' : '')}>
+      <div className={'result ' + (hasPhoto ? 'hasPhoto' : '')}>
         <canvas ref={photoRef}></canvas>
         <button onClick={closePhoto}>CLOSE!</button>
-      </div> */}
+      </div>
     </>
   );
 }
