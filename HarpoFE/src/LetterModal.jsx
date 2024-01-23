@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useSpring, animated } from 'react-spring';
 import Axios from 'axios';
 
-const LetterModal = ({ emotion, setEmotion, setLetter }) => {
+const LetterModal = ({ emotion, setEmotion, setLetter, setAudioPlayed }) => {
   const [show, setShow] = useState(true);
   const [newLetter, setNewLetter] = useState('');
 
@@ -33,6 +33,8 @@ const LetterModal = ({ emotion, setEmotion, setLetter }) => {
     } catch (error) {
       console.error('Error changing letter', error);
     }
+
+    setAudioPlayed(false)
     // setShow(ture);
   };
 

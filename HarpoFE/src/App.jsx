@@ -9,6 +9,8 @@ import LetterModal from './LetterModal'; // Import the modal component
 function App() {
   const videoRef = useRef(null);
   const photoRef = useRef(null);
+  const audioRef = useRef(null);
+  const [audioPlayed, setAudioPlayed] = useState(false)
   const [hasPhoto, setHasPhoto] = useState(false);
   const [data, setData] = useState("")
   const [emotion, setEmotion] = useState("neutral");
@@ -77,6 +79,14 @@ function App() {
       const newEmotion = response.data.emotion;
       console.log(newEmotion)
       setEmotion(newEmotion);
+
+      if (newEmotion === 'success' && !audioPlayed){
+        console.log(audioPlayed)
+        audioRef.current.play();
+        setAudioPlayed(true)
+        console.log(audioPlayed)
+
+      }
       
       setData(response.data);  // Assuming you want to keep this for some other purpose
     } catch (error) {
@@ -123,12 +133,13 @@ function App() {
           {letter && <SparkleImage src={`./src/assets/handSigns/${letter}.png`} name="hand_pic"/>}
         </div>
         <video ref={videoRef} className="video-stream"></video>
+        <audio ref={audioRef} src="./src/assets/sound/success.mp3" />
       </div>
       <div className={'result ' + (hasPhoto ? 'hasPhoto' : '')}>
         <canvas hidden ref={photoRef}></canvas>
       </div>
       {/* Pass setLetter to LetterModal to update the letter */}
-      <LetterModal emotion={emotion} setEmotion={setEmotion} setLetter={setLetter} />
+      <LetterModal emotion={emotion} setEmotion={setEmotion} setLetter={setLetter} setAudioPlayed={setAudioPlayed} />
     </>
   );
 }
