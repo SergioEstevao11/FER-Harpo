@@ -1,25 +1,36 @@
 import React, { useRef, useEffect, useState } from 'react';
 import './App.css';
+import './index.css';
 import SparkleImage from './SparkleImage';
 import Axios from 'axios';
+import LetterModal from './LetterModal'; // Import the modal component
+
 
 function App() {
   const videoRef = useRef(null);
   const photoRef = useRef(null);
   const [hasPhoto, setHasPhoto] = useState(false);
   const [data, setData] = useState("")
+  const [emotion, setEmotion] = useState("neutral");
+  const [showModal, setShowModal] = useState(false);
+  const [letter, setLetter] = useState("V"); // State to store the current letter
+
+
 
   const getVideo = () => {
     navigator.mediaDevices.getUserMedia({ video: { width: 1920, height: 1080 } })
       .then(stream => {
         let video = videoRef.current;
         video.srcObject = stream;
-        video.play();
+        video.onloadedmetadata = () => {
+          video.play();
+        };
       })
       .catch(err => {
         console.error(err);
       });
   };
+  
 
   const takePhoto = () => {
     const width = 414;
@@ -49,7 +60,11 @@ function App() {
         }
       });
       console.log('File uploaded successfully', response);
-      setData(response["data"]["emotion"])
+      const newEmotion = response.data.emotion;
+      console.log(newEmotion)
+      setEmotion(newEmotion);
+      
+      setData(response.data);  // Assuming you want to keep this for some other purpose
     } catch (error) {
       console.error('Error uploading file', error);
     }
@@ -64,25 +79,42 @@ function App() {
   };
 
   useEffect(() => {
+    if (emotion === 'success') {
+      setShowModal(true);
+    }
+  }, [emotion]);7
+
+  const changeLetter = async (newLetter) => {
+    try {
+      await Axios.post('http://localhost:5000/letter', { letter: newLetter });
+      console.log(`Letter changed to ${newLetter}`);
+    } catch (error) {
+      console.error('Error changing letter', error);
+    }
+    setShowModal(false);
+  };
+
+  useEffect(() => {
     getVideo();
     const interval = setInterval(takePhoto, 1000); // Take a photo every 1 second
     return () => clearInterval(interval); // Clear the interval when the component unmounts
-  }, [videoRef]);
+  }, [videoRef, setEmotion, letter]);
 
   return (
     <>
       <div className='App'>
-        <div>{data}</div>
+        <div>{emotion}</div>
         <div className='image-container'>
-          <SparkleImage src="./src/assets/womenReactions/neutral.png" id="reaction_pic" />
+          {emotion && <SparkleImage src={`./src/assets/womenReactions/${emotion}.png`} name="reaction_pic" />}
+          {letter && <SparkleImage src={`./src/assets/handSigns/${letter}.png`} name="hand_pic"/>}
         </div>
         <video ref={videoRef} className="video-stream"></video>
-        <button onClick={takePhoto}>SNAP!</button>
       </div>
       <div className={'result ' + (hasPhoto ? 'hasPhoto' : '')}>
-        <canvas ref={photoRef}></canvas>
-        <button onClick={closePhoto}>CLOSE!</button>
+        <canvas hidden ref={photoRef}></canvas>
       </div>
+      {/* Pass setLetter to LetterModal to update the letter */}
+      <LetterModal emotion={emotion} setEmotion={setEmotion} setLetter={setLetter} />
     </>
   );
 }

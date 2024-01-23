@@ -1,18 +1,20 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useSpring, animated } from 'react-spring';
-import './index.css'
+import './index.css';
 
-const SparkleImage = ({ src }) => {
-  // This animation will fade in the image
-  const fadeIn = useSpring({
+const SparkleImage = ({ src, name }) => {
+  const [fadeIn, setFadeIn] = useSpring(() => ({
     from: { opacity: 0 },
-    to: { opacity: 1 },
-    config: { duration: 1000 }, // This controls the duration of the fade
-  });
+    to: { opacity: 1 }
+  }));
+
+  useEffect(() => {
+    setFadeIn({ opacity: 1, reset: true });
+  }, [src, setFadeIn]);
 
   return (
     <animated.div style={fadeIn} className="sparkle-wrapper">
-      <img src={src} alt="Sparkling" className="sparkle-image" />
+      <img src={src} id={name} alt="Sparkling" className="sparkle-image" />
     </animated.div>
   );
 };

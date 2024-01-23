@@ -15,7 +15,7 @@ model = load_model('trained_model.h5')
 dict = {0: 'A', 1: 'B', 2: 'C', 3: 'D', 4: 'E', 5: 'F', 6: 'G', 7: 'H', 8: 'I', 9: 'J', 10: 'K', 11: 'L',
         12: 'M', 13: 'N', 14: 'O', 15: 'P', 16: 'Q', 17: 'R', 18: 'S', 19: 'T', 20: 'U', 21: 'V', 22: 'W', 
         23: 'X', 24: 'Y', 25: 'Z', 26: 'del', 27: 'nothing', 28: 'space', 29: 'other'}
-threshold = 5e-2
+threshold = 9e-2
 imageSize = 50
 current_letter = "V"
 emotions = {0: "neutral", 1: "happy", 2: "success", 3: "sad"}
@@ -23,21 +23,27 @@ current_emotion = emotions[0] #neutral is the default
 
 
 def evaluate_emotion(prediction, current_letter, threshold):
+
     if current_emotion == emotions[2]:
         return emotions[2]
 
-    if current_letter in prediction['valid_classes']:
-        return emotions[2]  # 'success'
-
     current_letter_confidence = prediction['confidences'][current_letter]
 
-    if prediction['predicted_class'] == current_letter:
+    # Success if the current letter is within valid classes and above the threshold
+    if current_letter in prediction['valid_classes'] and current_letter_confidence > threshold:
+        return emotions[2]  # 'success'
+
+    # Happy if the prediction matches the current letter and is close to the threshold
+    if prediction['predicted_class'] == current_letter and abs(current_letter_confidence - threshold) <= 0.1:
         return emotions[1]  # 'happy'
 
-    if abs(current_letter_confidence - threshold) <= 0.1:  # Adjust this value as needed
+    # Neutral if the confidence is somewhat close to the threshold
+    if abs(current_letter_confidence - threshold) <= 0.5:
         return emotions[0]  # 'neutral'
 
+    # Sad if the confidence is far below the threshold
     return emotions[3]  # 'sad'
+
 
 def predict_image(img_file, threshold):     
     global current_emotion
@@ -89,7 +95,7 @@ def update_letter():
     data = request.get_json()
     if not data or 'letter' not in data:
         return 'No letter part', 400
-    current_letter = data['letter']
+    current_letter = data['letter'].upper()
     current_emotion = emotions[0]
     return {"message": f"Current letter updated to: {current_letter}"}, 200
 

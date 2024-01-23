@@ -72,6 +72,17 @@ button:focus-visible {
 }
 
 .image-container{
-  scale: 80%;
   position: absolute;
+  width: 65%;
+}
+
+#reaction_pic{
+  scale: 80%;
+}
+
+#hand_pic{
+  scale: 330%;
+  float: right;
+  padding-bottom: 11%;
+
 }
