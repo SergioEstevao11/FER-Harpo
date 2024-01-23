@@ -12,9 +12,7 @@ function App() {
   const audioRef = useRef(null);
   const [audioPlayed, setAudioPlayed] = useState(false)
   const [hasPhoto, setHasPhoto] = useState(false);
-  const [data, setData] = useState("")
   const [emotion, setEmotion] = useState("neutral");
-  const [showModal, setShowModal] = useState(false);
   const [letter, setLetter] = useState("V"); // State to store the current letter
 
 
@@ -51,20 +49,6 @@ function App() {
     setHasPhoto(true);
   };
 
-  // const getLetter = async() =>{
-  //   try{
-  //     response = await Axios.get('http://localhost:5000/get_letter');
-  //     setLetter(response["letter"])
-  //   }catch (error) {
-  //     console.error('Error getting current letter', error);
-  //   }
-    
-  // }
-
-  // useEffect(() => {
-  //   getLetter()
-  // }, [])
-
   const uploadPhoto = async (blob) => {
     const formData = new FormData();
     formData.append('file', blob);
@@ -94,13 +78,6 @@ function App() {
     }
   };
 
-  const closePhoto = () => {
-    let photo = photoRef.current;
-    let ctx = photo.getContext('2d');
-
-    ctx.clearRect(0, 0, photo.width, photo.height);
-    setHasPhoto(false);
-  };
 
   useEffect(() => {
     if (emotion === 'success') {
@@ -138,7 +115,6 @@ function App() {
       <div className={'result ' + (hasPhoto ? 'hasPhoto' : '')}>
         <canvas hidden ref={photoRef}></canvas>
       </div>
-      {/* Pass setLetter to LetterModal to update the letter */}
       <LetterModal emotion={emotion} setEmotion={setEmotion} setLetter={setLetter} setAudioPlayed={setAudioPlayed} />
     </>
   );
