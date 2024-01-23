@@ -10,13 +10,13 @@ app = Flask(__name__)
 CORS(app)
 
 # Load the model from the H5 file
-model = load_model('trained_model.h5')
+model = load_model('Sign Language ASL Classifier.h5')
 
 dict = {0: 'A', 1: 'B', 2: 'C', 3: 'D', 4: 'E', 5: 'F', 6: 'G', 7: 'H', 8: 'I', 9: 'J', 10: 'K', 11: 'L',
         12: 'M', 13: 'N', 14: 'O', 15: 'P', 16: 'Q', 17: 'R', 18: 'S', 19: 'T', 20: 'U', 21: 'V', 22: 'W', 
         23: 'X', 24: 'Y', 25: 'Z', 26: 'del', 27: 'nothing', 28: 'space', 29: 'other'}
-threshold = 9e-2
-imageSize = 50
+threshold = 2e-3
+imageSize = 224
 current_letter = "V"
 emotions = {0: "neutral", 1: "happy", 2: "success", 3: "sad"}
 current_emotion = emotions[0] #neutral is the default
@@ -34,11 +34,11 @@ def evaluate_emotion(prediction, current_letter, threshold):
         return emotions[2]  # 'success'
 
     # Happy if the prediction matches the current letter and is close to the threshold
-    if prediction['predicted_class'] == current_letter and abs(current_letter_confidence - threshold) <= 0.1:
+    if prediction['predicted_class'] == current_letter and current_letter_confidence > 0.7*threshold:
         return emotions[1]  # 'happy'
 
     # Neutral if the confidence is somewhat close to the threshold
-    if abs(current_letter_confidence - threshold) <= 0.5:
+    if current_letter_confidence > 0.3*threshold:
         return emotions[0]  # 'neutral'
 
     # Sad if the confidence is far below the threshold
@@ -98,6 +98,10 @@ def update_letter():
     current_letter = data['letter'].upper()
     current_emotion = emotions[0]
     return {"message": f"Current letter updated to: {current_letter}"}, 200
+
+@app.route("/get_letter")
+def get_letter():
+    return {"letter": current_letter}
 
 @app.route("/test")
 def test():

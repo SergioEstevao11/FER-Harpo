@@ -49,6 +49,20 @@ function App() {
     setHasPhoto(true);
   };
 
+  // const getLetter = async() =>{
+  //   try{
+  //     response = await Axios.get('http://localhost:5000/get_letter');
+  //     setLetter(response["letter"])
+  //   }catch (error) {
+  //     console.error('Error getting current letter', error);
+  //   }
+    
+  // }
+
+  // useEffect(() => {
+  //   getLetter()
+  // }, [])
+
   const uploadPhoto = async (blob) => {
     const formData = new FormData();
     formData.append('file', blob);
@@ -82,7 +96,7 @@ function App() {
     if (emotion === 'success') {
       setShowModal(true);
     }
-  }, [emotion]);7
+  }, [emotion]);
 
   const changeLetter = async (newLetter) => {
     try {

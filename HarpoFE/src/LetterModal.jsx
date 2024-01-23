@@ -4,12 +4,12 @@ import { useSpring, animated } from 'react-spring';
 import Axios from 'axios';
 
 const LetterModal = ({ emotion, setEmotion, setLetter }) => {
-  const [show, setShow] = useState(false);
+  const [show, setShow] = useState(true);
   const [newLetter, setNewLetter] = useState('');
 
-  useEffect(() => {
-    setShow(emotion === 'success');
-  }, [emotion]);
+  // useEffect(() => {
+  //   setShow(emotion === 'success');
+  // }, [emotion]);
 
   const animation = useSpring({
     opacity: show ? 1 : 0,
@@ -33,7 +33,7 @@ const LetterModal = ({ emotion, setEmotion, setLetter }) => {
     } catch (error) {
       console.error('Error changing letter', error);
     }
-    setShow(false);
+    // setShow(ture);
   };
 
   const handleSubmit = (e) => {
